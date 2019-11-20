@@ -1,0 +1,466 @@
+---
+title: "Exposure Assessment Worksheet"
+#author: "Taylor Wall"
+#date: "10/9/2019"
+#knit: (function(inputFile, encoding) {
+#  rmarkdown::render(inputFile, encoding = encoding, output_dir = "output") })
+output: 
+  word_document:
+    toc: yes
+    reference_docx: ../input/Minnesota-Form-styles.docx
+params:
+ dtxsid: NA
+ data: NA
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+#Function to pull data from database by DTXSID
+#source("DTXSID_media_detected.R")
+```
+
+```{r init, echo=FALSE, results="hide",message = FALSE, warning = FALSE}
+require(dplyr, quietly = T)
+require(knitr, quietly = T)
+require(data.table, quietly = T)
+require(pander, quietly = T)
+require(readxl, quietly = T)
+  panderOptions('table.alignment.default', function(df)
+      ifelse(sapply(df, is.numeric), 'right', 'left')) #Right Align Numerics
+  panderOptions('table.split.table', Inf) #Don't split tables if too long (for now)
+  panderOptions('big.mark', ",") #Show "," for numbers
+  panderOptions('keep.trailing.zeros', TRUE)
+#require(xtable, quietly = T)
+#require(kableExtra, quietly = T)
+#require(flextable)
+#require(huxtable)
+
+#Pulling rows for tables
+tableRows = list(Chemical.Identity = read_xlsx("../input/tableRows.xlsx", sheet="chemical_identity"),
+                  Chemical.Properties = read_xlsx("../input/tableRows.xlsx", sheet="chemical_data"),
+                  Chemical.Emissions = read_xlsx("../input/tableRows.xlsx", sheet = "chemical_emissions"),
+                  Chemical.Occurrence = read_xlsx("../input/tableRows.xlsx", sheet="chemical_occurrence_in_environ"),
+                  Human.Exposure = read_xlsx("../input/tableRows.xlsx", sheet="human_exposure"),
+                  Review.History = read_xlsx("../input/tableRows.xlsx", sheet="review_history"))
+#Pulling media categories
+mediaList = read.csv("../input/mediaList.csv", stringsAsFactors = FALSE)
+
+#Input list of DTXSID's
+chemInfo = read.csv("../input/batchOverall.csv", stringsAsFactors = FALSE)
+#dtxsid = read_xlsx("../input/combined chemical list.xlsx")$DTXSID 
+#dtxsid = list("DTXSID7021318", "DTXSID1026164", #"DTXSID8029733", "DTXSID80891918")
+#Pulling data (can change npage and page_size defaults if desired)
+#rawdata = get_DTXSID_Media_Detected(url="http://api.factotum.epa.gov/products/", d=dtxsid)
+#data = rawdata$data
+#missingDTX = rawdata$missingDTX
+missingDTX = params$data$missingDTX
+missingDTX$DTXSID <- as.character(missingDTX$DTXSID)
+#noPucDTX = rawdata$noPucDTX
+noPucDTX = params$data$noPucDTX
+noPucDTX$DTXSID <- as.character(noPucDTX$DTXSID)
+
+#Filtering data by DTXSID
+tabDat = filter(params$data$data, DTXSID==params$dtxsid)
+```
+
+`r pandoc.header(paste("Exposure Summary for", params$dtxsid), level=1)`
+
+------------------------------------------------------------------------------------------------------
+&nbsp;                                                     &nbsp;
+---------------------------------------------------------  -------------------------------------------
+Chemical Name:                                             `r chemInfo$chemName[chemInfo$DTXSID == params$dtxsid]`
+
+[CAS number](http://toxnet.nlm.nih.gov/index.html):        `r chemInfo$CAS[chemInfo$DTXSID == params$dtxsid]`
+
+Review Type:                                               &nbsp;
+
+Nomination Info\                                           For CECs, refer to [nominations tracking table]("\\AA\ORD\ORD\Data\ESA\ESA_Units_Programs\HRA\Guidance\Water\Screening\Nominations") (link is under "Date of Nomination.")\
+^(who/when/why)^                                           Chemical status is in the [Chemical tracking Table]("\\AA\ORD\ORD\Data\ESA\ESA\_Units\_Programs\HRA\Admin\Tracking\ChemicalProjectTracking\").
+
+Exposure Score                                             -1
+------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------
+
+<br>
+
+------------------------------------------------------------------------------
+Some useful Links &nbsp;
+----------------- ------------------------------------------------------------
+General           [PubMed (NIH/NLM)](http://www.ncbi.nlm.nih.gov/pubmed/)(search for journal articles)\
+                  [Google Scholar](https://scholar.google.com/) (search for journal articles)
+                  [EPA CompTox Chemistry Dashboard](https://comptox.epa.gov/dashboard/)—Fate/transport, exposure estimates, chemical uses, and more\
+                  [PubChem](https://pubchem.ncbi.nlm.nih.gov/) (chemical data)\
+                  [ATSDR](http://www.atsdr.cdc.gov/) (Tox profiles, often include exposure information as well)\
+                  [TOXNET](http://toxnet.nlm.nih.gov/index.html) (Chemical data; go to HSDB for chemical properties and related info.)\
+                  [EPA Clu-In fact sheets and info](https://clu-in.org/)
+                  [EPA Federal Facility Contaminant Fact Sheets](https://www.epa.gov/fedfac/emerging-contaminants-and-federal-facility-contaminants-concern#706)
+
+Physical/Chemical\  [TOXNET](http://toxnet.nlm.nih.gov/index.html) (Chemical data; go to HSDB for chemical properties and related info.)\
+properties          [NLM ChemID Plus](http://chem.sis.nlm.nih.gov/chemidplus/) (good for chemical identity and properties)
+
+Chemical use      [Pesticide registration status and documentation](http://www.epa.gov/opp00001/reregistration/status.htm)\
+                  [Pharmaceutical label information](http://dailymed.nlm.nih.gov/dailymed/about.cfm)\
+                  [Food additives](https://www.accessdata.fda.gov/scripts/fdcc/?set=FoodSubstances)\
+                  [Cosmetics and Fragrances](http://www.cir-safety.org/)\
+                  Fragrance assessments: [Food & Chemical Toxicology Fragrance Material Safety Assessment Center](http://fragrancematerialsafetyresource.elsevier.com/)
+                  
+Exposure Information    [USDA Pesticide Data Program](http://www.ams.usda.gov/AMSv1.0/pdp) (PDP) (pesticide data, including food residues)
+
+Monitoring Data       *General (also see section 4)*: [Occurrence studies by USGS and others]("O:\ESA\ESA_Units_Programs\HRA\Resources\ExposureOccurenceReports")\
+                      *Pharmaceuticals*: [NOAA](http://products.coastalscience.noaa.gov/peiar/) – monitoring of pharmaceuticals in the environment\
+                      *Pesticides*: [MDA monitoring and Assessment of Agricultural Chemicals in the Environment](https://www.mda.state.mn.us/pesticide-fertilizer/monitoring-assessment-agricultural-chemicals-environment) (including annual monitoring reports)
+
+Release Information      [EPA Toxics Release Inventory](http://www.epa.gov/triexplorer/) (industrial chemical releases) NOTE (Jan 2019) the popup window for selecting chemicals is glitchy. Only Firefox opened the window properly (regardless of popup settings) and it was necessary to reload the URL inside the popup top make the selection function work.
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+
+```{r DTXSID_Loop, echo=FALSE, results='asis'}
+message("Printing Missing and NoPuc Parameter Tables")
+#Note missing DTXSID from input
+pandoc.header(paste0("Missing DTXSID from Input: ", missingDTX$Count), level=1)
+data.frame(DTXSID=unlist(missingDTX$DTXSID)) %>%
+  left_join(chemInfo, by=c("DTXSID"="DTXSID")) %>%
+  select(DTXSID, CAS, chemName) %>%
+  kable() %>%
+  print()
+
+pandoc.header(paste0("No PUC Assigned for DTXSID from Input: ", noPucDTX$Count), level=1)
+data.frame(DTXSID=unlist(noPucDTX$DTXSID)) %>%
+  left_join(chemInfo, by=c("DTXSID"="DTXSID")) %>%
+  select(DTXSID, CAS, chemName) %>%
+  kable() %>%
+  print()
+
+#Creating each DTXSID table set
+for(i in 1:length(params$dtxsid)){#Keeping deprecated loop so can skip missing DTXSID values
+  if(params$dtxsid[i] %in% missingDTX$DTXSID) next #next #Don't make tables for DTXSID's not found
+  
+  #####################################################################################################
+  ###Chemical Use Table
+  #####################################################################################################
+  #Preparing row inputs
+  chemIDList = list(
+    chemSyn = character(),
+    chemUses = character(), #CPCat
+    fus = character(),
+    cpCat = character(), #CPDat/CPCat
+    prodData = character(),
+    keyMessages = character(),
+    potentialIssues = character(),
+    secondaryReview = character()
+  )
+
+  #Customizing row inputs
+  for(row in names(chemIDList)){
+    if(row == "chemSyn"){
+      chemIDList[row] = paste("Place Holder")
+    }
+    else if(row == "chemUses"){
+      chemIDList[row] = ifelse(any(is.na(tabDat$general_category)),
+                                 str_flatten(unique(na.omit(tabDat$product_type)), collapse="; "),
+                                 NA)
+      nProductsByPUC = tabDat %>%
+        select(product_name, general_category, product_type) %>%
+        group_by(product_name) %>%
+        distinct() %>%
+        group_by(product_type) %>%
+        mutate(uniqueProductCount = n()) %>%
+        select(-product_name) %>%
+        ungroup() %>%
+        distinct() %>%
+        na.omit()
+        
+    } #else if(row == "nProducts"){
+      #sum(tabDat$n_records, na.rm=TRUE)
+      #chemIDList[row] = na.omit(tabDat$product_name) %>% unique() %>% length() %>% prettyNum(big.mark = ",")
+    #} 
+    else if(row == "fus"){
+      chemIDList[row] = ifelse(any(is.na(tabDat$general_category)),
+                                 str_flatten(unique(na.omit(tabDat$reported_functional_use)), collapse="; "),
+                                 NA)
+      #Industrial/Commerical
+      #Agricultural
+      #Consumer (personal care)
+      #Consumer (pharmaceutical)
+      #Consumer (food)
+      #COnsumer (other)
+      
+    } else if(row == "cpCat"){
+      chemIDList[row] = ifelse(any(is.na(tabDat$general_category)),
+                                 str_flatten(unique(na.omit(tabDat$general_category)), collapse="; "),
+                                 NA)
+    } else if(row == "secondaryReview"){
+      chemIDList[row] = "(note any disagreements/additions/corrections)"
+    }else {
+      chemIDList[row] = paste("Place Holder")
+    }
+  }
+
+  pandoc.header("1. Chemical Use",level=2)
+  #Binding Row.List and Row Inputs into single table
+  cbind(tableRows$Chemical.Identity, 
+        {chemIDList %>% #Restructing list to prep for cbind
+            as.data.frame() %>%
+            gather() %>%
+            select(value)
+          }) %>%
+    #kable(col.names = NULL) %>%
+    pandoc.table(col.names=c())
+  ###Need to re-knit to see if this outputs better table formats
+    #print()
+
+  #####################################################################################################
+  ###Chemical_Properties Table
+  #####################################################################################################
+  #Preparing row inputs
+  chemDataList = list(
+    koc = numeric(),
+    biodegradHL = numeric(),
+    soilWaterSedHL = numeric(),
+    waterSolubility = numeric(),
+    henryConst = numeric(),
+    WWTPremoval = numeric(),
+    molWeight = numeric(),
+    vaporPressure = numeric(),
+    kow = numeric(),
+    BCF = numeric(),
+    breakdownProd = character(),
+    keyMessage = character(),
+    potentialIssues = character(),
+    secondaryReview = character()
+  )
+
+  for(row in names(chemDataList)){
+    if(row =="vaporPressure"){
+      chemDataList[row] = NaN #prettyNum(big.mark = ",")
+    } else if(row == "secondaryReview"){
+      chemDataList[row] = "(note any disagreements/additions/corrections)"
+    }else{
+      chemDataList[row] = paste("Place Holder")
+    }
+  }
+
+  pandoc.header("2. Chemical Data", level=2)
+  #Binding Row.List and Row Inputs into single table
+  cbind(tableRows$Chemical.Properties, 
+        {chemDataList %>% #Restructing list to prep for cbind
+            as.data.frame() %>%
+            gather() %>%
+            select(value)
+          }) %>%
+    kable(col.names = NULL) %>%
+    print()
+
+  #####################################################################################################
+  ###Chemical Emissions and Disposal Table
+  #####################################################################################################
+  chemEmissions = list(
+    WWConc = numeric(),
+    DTDD = numeric(),
+    LFD = numeric(),
+    PFR2L = numeric(),
+    PFR2W = numeric(),
+    IR2W = numeric()
+  )
+  
+  for(row in names(chemEmissions)){
+    if(row =="WWConc"){
+      chemEmissions[row] = paste("Place Holder")# NaN #prettyNum(big.mark = ",")
+    }else{
+      chemEmissions[row] = paste("Place Holder")
+    }
+  }
+  
+  pandoc.header("3. Chemical Emissions and Disposal", level=2)
+    cbind(tableRows$Chemical.Emissions, 
+        {chemEmissions %>% #Restructing list to prep for cbind
+            as.data.frame() %>%
+            gather() %>%
+            select(value)
+          }) %>%
+    kable(col.names = NULL) %>%
+    print()
+  
+  #####################################################################################################
+  ###Chemical Occurrence Table
+  #####################################################################################################
+  #Preparing row inputs
+  chemOccur = list(
+    dwInMN = character(),
+    dwOutMN = character(),
+    pswInMN = character(),
+    pswOutMN = character(),
+    nsswInMN = character(),
+    nsswOutMN = character(),
+    nsgwInMN = character(),
+    nsgwOutMN = character(),
+    usgsTierW = character(),
+    usgsTierS = character(),
+    mnGroundWater = character(),
+    air = character(),
+    food = character(),
+    soil = character(),
+    sludgeBiosolids = character(),
+    keyMessage = character(),
+    potentialIssues = character(),
+    secondaryReview = character()
+  )
+
+  for(row in names(chemOccur)){
+    if(row =="inWaterMinn" | row == "waterLocations"){
+      chemOccur[row] = paste("Place Holder") #Need to fix calculation/inclusion
+    } else if(!(row %in% mediaList$media.category)) {
+      chemOccur[row] = paste("Place Holder")
+    } else if(row == "secondaryReview"){
+      chemOccur[row] = "(note any disagreements/additions/corrections)"
+    }else {
+    category = mediaList$harmonized_medium[mediaList$media.category == row]
+      catSum = sum(tabDat$detected[str_detect(tabDat$harmonized_medium, category)]) %>% prettyNum(big.mark = ",")
+      chemOccur[row] = ifelse(catSum > 0, paste0("Yes, (", catSum, ")"), "No")
+    }
+  }
+
+  pandoc.header("4. Chemical Occurrence in Environment, Drinking Water, and Food",level=2)
+  #Binding Row.List and Row Inputs into single table
+  cbind(tableRows$Chemical.Occurrence, 
+        {chemOccur %>% #Restructing list to prep for cbind
+            as.data.frame() %>%
+            gather() %>%
+            select(value)
+          }) %>%
+    kable(col.names = NULL) %>%
+    print()
+  
+  #####################################################################################################
+  ###HUman Exposure Table
+  #####################################################################################################
+  #Preparing row inputs
+  humanExposure = list(
+    inConsumerProd = character(),
+    dirExpoPot_consProd = character(),
+    inFoodDrinkWater = character(),
+    expoPot_foodDrink = character(),    
+    genPopExpo = character(),
+    inHumanBody = character(),
+    dermalExpo = character(),
+    inhaleExpo = character(),
+    drinkWaterExpo = character(),
+    foodExpo = character(),
+    incidIngest = character(),
+    avgDailyDose = character(),
+    relSrcContrib = character(),
+    specPop = character(),
+    keyMessage = character(),
+    secondaryReview = character()
+  )
+
+  for(row in names(humanExposure)){
+    if(row =="inConsumerProd"){
+      humanExposure[row] = paste("Place Holder") #Need to fix calculation/inclusion
+    } else if(row == "relSrcContrib"){
+      humanExposure[row] = "(This section is completed during full review, not during screening.)"
+    } else if(row == "secondaryReview"){
+      humanExposure[row] = "(note any disagreements/additions/corrections)"
+    } else {
+      humanExposure[row] = paste("Place Holder")
+    }
+  }
+
+  pandoc.header("5. Human Exposure",level=2)
+  #Binding Row.List and Row Inputs into single table
+  cbind(tableRows$Human.Exposure, 
+        {humanExposure %>% #Restructing list to prep for cbind
+            as.data.frame() %>%
+            gather() %>%
+            select(value)
+          }) %>%
+    kable(col.names = NULL) %>%
+    print()
+  
+  #####################################################################################################
+  ###Review History Table
+  #####################################################################################################
+  #Preparing row inputs
+  reviewHistory = list(
+    screenReviewer = character(),
+    primaryReviewer = character(),
+    secondaryReviewer = character(),
+    MDHStaff = character(),
+    otherStaff = character(),
+    contactAgencies = character(),
+    potMDHAction = character(),
+    contactsRecord = character()
+  )
+
+  for(row in names(reviewHistory)){
+    if(row %in% "Reviewer"){
+      reviewHistory[row] = paste("Place Holder", Sys.Date(), sep="-") #Need to fix calculation/inclusion
+    } else if(row == "MDHStaff"){
+      reviewHistory[row] = "(for example: staff from infectious disease, staff who deal with pesticide application issues, staff who may be involved with public messages about this chemical. Not necessarily people we are asking for information)"
+    } else if(row == "otherStaff"){
+      reviewHistory[row] = "(list individuals who may have information to contribute)"
+    } else if(row == "contactAgencies"){
+      reviewHistory[row] = "(list state agencies that may need to be kept informed of this review. For example, MPCA, MDA)"
+    } else if(row == "potMDHAction"){
+      reviewHistory[row] = "For example: recommend addition to CCL4 list; send comments to EPA; advise MPCA on potential exposure; recommend sampling by MDH; offer advice to public on how to reduce impacts or personal exposure; etc.)"
+    } else if(row == "contactsRecord"){
+      reviewHistory[row] = "(keep a list of correspondence, items that need follow-up, questions asked, etc.)"
+    } else {
+      reviewHistory[row] = paste("Place Holder")
+    }
+  }
+
+  pandoc.header("6. Review History and Contacts",level=2)
+  #Binding Row.List and Row Inputs into single table
+  cbind(tableRows$Review.History, 
+        {reviewHistory %>% #Restructing list to prep for cbind
+            as.data.frame() %>%
+            gather() %>%
+            select(value)
+          }) %>%
+    kable(col.names = NULL) %>%
+    print()
+  
+  #TBD Insert pagebreak between DTXSID values
+  #pandoc.p("&nbsp;")
+  #if(length(params$dtxsid) > 1)  pandoc.horizontal.rule() #Only draw a line if multiple DTXSID passed to a single doc
+  #if(length(dtxsid) > 1)  pandoc.horizontal.rule()
+}
+```
+
+```{r Supplemental_Table, echo=FALSE, results='asis'}
+pandoc.header("References",level=1)
+#Details of the Data Pulled
+pandoc.header("Supplemental Tables",level=1)
+pandoc.header("Chemical Data",level=2)
+params$data$data %>% 
+#data %>%
+  filter(DTXSID %in% params$dtxsid) %>%
+  #filter(DTXSID %in% dtxsid) %>%
+  ungroup() %>%
+  select(product_name, general_category, product_type, DTXSID, minimum_weight_fraction, maximum_weight_fraction) %>%
+  unique() %>%
+  kable() %>%
+  print()
+#All from dev_consumer
+# All products containing the chemical
+# 1- Category; 2- Product Name; 3- Weight Fraction
+# 4- Name of source for functional use data (don’t have this in the database right now, but will later)
+pandoc.header("Data Sources by CPCat Term",level=2)
+# Specific data source and document name(s) associated with each CPCat term
+pandoc.p("TABLE TBD!")
+pandoc.header("Detection by Source",level=2)
+params$data$data %>%
+  #data %>%
+  filter(DTXSID %in% params$dtxsid) %>%
+  #filter(DTXSID %in% dtxsid) %>%
+  group_by(DTXSID, name, harmonized_medium) %>%
+  mutate(nProducts = length(unique(na.omit(product_name)))) %>%
+  select(DTXSID, name, harmonized_medium, reported_species, nProducts, detected) %>%
+  ungroup() %>%
+  unique() %>%
+  kable() %>%
+  print()
+#Number of detects by source similar to the table you sent already. 
+#Eventually break out by state/country once we do post-processing of the prod_samples database.
+```
