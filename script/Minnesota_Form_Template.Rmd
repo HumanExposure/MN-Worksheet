@@ -104,13 +104,13 @@ Chemical use      [Pesticide registration status and documentation](http://www.e
                   [Cosmetics and Fragrances](http://www.cir-safety.org/)\
                   Fragrance assessments: [Food & Chemical Toxicology Fragrance Material Safety Assessment Center](http://fragrancematerialsafetyresource.elsevier.com/)
                   
-Exposure Information    [USDA Pesticide Data Program](http://www.ams.usda.gov/AMSv1.0/pdp) (PDP) (pesticide data, including food residues)
+Exposure Information     [USDA Pesticide Data Program](http://www.ams.usda.gov/AMSv1.0/pdp) (PDP) (pesticide data, including food residues)
 
 Monitoring Data       *General (also see section 4)*: [Occurrence studies by USGS and others]("O:\ESA\ESA_Units_Programs\HRA\Resources\ExposureOccurenceReports")\
                       *Pharmaceuticals*: [NOAA](http://products.coastalscience.noaa.gov/peiar/) – monitoring of pharmaceuticals in the environment\
                       *Pesticides*: [MDA monitoring and Assessment of Agricultural Chemicals in the Environment](https://www.mda.state.mn.us/pesticide-fertilizer/monitoring-assessment-agricultural-chemicals-environment) (including annual monitoring reports)
 
-Release Information      [EPA Toxics Release Inventory](http://www.epa.gov/triexplorer/) (industrial chemical releases) NOTE (Jan 2019) the popup window for selecting chemicals is glitchy. Only Firefox opened the window properly (regardless of popup settings) and it was necessary to reload the URL inside the popup top make the selection function work.
+Release Information       [EPA Toxics Release Inventory](http://www.epa.gov/triexplorer/) (industrial chemical releases) NOTE (Jan 2019) the popup window for selecting chemicals is glitchy. Only Firefox opened the window properly (regardless of popup settings) and it was necessary to reload the URL inside the popup top make the selection function work.
 ------------------------------------------------------------------------------
 ------------------------------------------------------------------------------
 
@@ -142,6 +142,12 @@ for(i in 1:length(params$dtxsid)){#Keeping deprecated loop so can skip missing D
   chemIDList = list(
     chemSyn = character(),
     chemUses = character(), #CPCat
+    industry = character(),
+    agr = character(),
+    conPer = character(),
+    conPharm = character(),
+    conFood = character(),
+    conOther = character(),
     fus = character(),
     cpCat = character(), #CPDat/CPCat
     prodData = character(),
@@ -154,21 +160,35 @@ for(i in 1:length(params$dtxsid)){#Keeping deprecated loop so can skip missing D
   for(row in names(chemIDList)){
     if(row == "chemSyn"){
       chemIDList[row] = paste("Place Holder")
-    }
-    else if(row == "chemUses"){
-      chemIDList[row] = ifelse(any(is.na(tabDat$general_category)),
-                                 str_flatten(unique(na.omit(tabDat$product_type)), collapse="; "),
-                                 NA)
-      nProductsByPUC = tabDat %>%
-        select(product_name, general_category, product_type) %>%
-        group_by(product_name) %>%
+    } else if(row == "conPer"){
+      chemIDList[row] = test <- filter(tabDat, grepl('Personal care', general_category)) %>%
+        na.omit() %>%
+        select(product_family, product_type) %>%
         distinct() %>%
-        group_by(product_type) %>%
-        mutate(uniqueProductCount = n()) %>%
-        select(-product_name) %>%
-        ungroup() %>%
+        unlist() %>%
+        paste0(collapse=" - ")
+    } else if(row == "conOther"){
+      chemIDList[row] = filter(tabDat, !(grepl('Personal care', general_category))) %>%
+        na.omit() %>%
+        select(product_family, product_type) %>%
         distinct() %>%
-        na.omit()
+        unlist() %>%
+        paste0(collapse=" - ")
+    
+    #gsub("@.*","",rs)
+      # chemIDList[row] = ifelse(any(is.na(tabDat$general_category)),
+      #                            str_flatten(unique(na.omit(tabDat$product_type)), collapse="; "),
+      #                            NA)
+      # nProductsByPUC = tabDat %>%
+      #   select(product_name, general_category, product_type) %>%
+      #   group_by(product_name) %>%
+      #   distinct() %>%
+      #   group_by(product_type) %>%
+      #   mutate(uniqueProductCount = n()) %>%
+      #   select(-product_name) %>%
+      #   ungroup() %>%
+      #   distinct() %>%
+      #   na.omit()
         
     } #else if(row == "nProducts"){
       #sum(tabDat$n_records, na.rm=TRUE)
@@ -186,8 +206,8 @@ for(i in 1:length(params$dtxsid)){#Keeping deprecated loop so can skip missing D
       #COnsumer (other)
       
     } else if(row == "cpCat"){
-      chemIDList[row] = ifelse(any(is.na(tabDat$general_category)),
-                                 str_flatten(unique(na.omit(tabDat$general_category)), collapse="; "),
+      chemIDList[row] = ifelse(any(is.na(tabDat$CPCat)),
+                                 str_flatten(unique(na.omit(tabDat$CPCat)), collapse="; "),
                                  NA)
     } else if(row == "secondaryReview"){
       chemIDList[row] = "(note any disagreements/additions/corrections)"
